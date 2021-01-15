@@ -1,0 +1,314 @@
+/*
+Ben Kupernik
+Linkedlist.template
+Header File
+
+
+This is the definition file for a template linked list data structure. It contains a constructor, copy constructor,
+destructor, assignment operator, standard add and remove functions and read/write file functions.
+* /
+
+/*****************************************************************************************************************************************/
+//constructors and destructors
+
+template <typename TheType>
+LinkedList<TheType>::LinkedList()
+{
+	head = nullptr;
+	tail = nullptr;
+}
+
+//copy constructor
+template <typename TheType>
+LinkedList<TheType>::LinkedList(const LinkedList& source)
+{
+	head = nullptr;
+	tail = nullptr;
+
+	for (Node<TheType>* current = source.head; current != nullptr; current = current->next)
+		this->addToEnd(current->data);
+}
+
+template <typename TheType>//destructor frees the associated memory
+LinkedList<TheType>::~LinkedList()
+{
+	this->removeAll();
+}
+
+/******************************************************************************************************************************************/
+//accessors
+
+template <typename TheType>
+TheType LinkedList<TheType>::getByIndex(int index)
+{
+	TheType temp;
+	int lopeCount = 0;
+
+	if (index > ((this->getCount()) - 1))
+	{
+		std::cout << "this does not exist" << std::endl;
+		return temp;
+	}
+
+	for (Node<TheType>* current = head; current != nullptr; current = current->next)
+	{
+		lopeCount++;
+		if (lopeCount == index)
+		{
+			temp = current->data;
+			return temp;
+		}
+	}
+	return temp;
+}
+
+
+template <typename TheType>
+TheType LinkedList<TheType>::getRandomItem()//returns the data stored in a random node
+{
+	int rando = 0;
+	int lopeCount = 0;
+	int count = 0;
+	TheType temp;
+	count = this->getCount();
+	
+	if (this->isEmpty())
+		return temp;
+
+	srand(time(NULL));//generated random number
+	rando = std::rand() % count + 1;
+	
+	for (Node<TheType>* current = head; current != nullptr; current = current->next)
+	{
+		lopeCount++;
+		if (lopeCount == rando)
+		{
+			temp = current->data;
+			return temp;
+		}
+	}
+	return temp;
+}
+
+template <typename TheType>
+void LinkedList<TheType>::print()//prints all the data in the linked list
+{
+	for (Node<TheType>* current = head; current != nullptr; current = current->next)
+		std::cout << current->data << std::endl;
+}
+
+template <typename TheType>
+int LinkedList<TheType>::getCount()//counts the items in the linked list
+{
+	int count = 0;
+
+	for (Node<TheType>* current = head; current != nullptr; current = current->next)
+		count ++;
+	return count;
+}
+
+template <typename TheType>
+bool LinkedList<TheType>::isEmpty()//returns true if the list is empty false if not
+{
+	bool empty = true;
+	
+	if (this->getCount() > 0)
+		empty = false;
+
+	return empty;
+}
+/******************************************************************************************************************************************/
+//modifiers
+template <typename TheType>
+void LinkedList<TheType>::addToBegining(TheType dataIn)//adds a node to the beginning
+{
+	if (head == nullptr)//if the list is empty
+		this->addToEnd(dataIn);
+	else
+	{
+		Node<TheType>* current = new Node<TheType>;//creates a pointer to a new node
+		current->data = dataIn;//assigns the data to the new node
+		std::swap(current, this->head);//head now points to the new node and current now points to the node that used to be at the start
+		head->next = current;//the next pointer for the new head now points to the next node
+	}
+
+
+}
+
+template <typename TheType>
+void LinkedList<TheType>::addToEnd(TheType dataIn)//adds a node to the end
+{
+	Node<TheType>* current = new Node<TheType>(); //creates pointer to a new node
+	current->data = dataIn; //copies the data in into the new node
+
+	if (head == nullptr) //if empty list set all pointers to point at the new node
+	{
+		head = current;
+		tail = current;
+	}
+	else
+	{
+		tail->next = current;
+		tail = current;
+	}
+}
+template <typename TheType>
+void LinkedList<TheType>::removeItem(TheType dataIn)//removes a node and frees the associated memory
+{
+	Node<TheType>* current = this->findByItem(dataIn);//finds the pointer to the node to be removed
+	Node<TheType>* last = this->findByItemPrevious(dataIn);//finds the pointer to the node before it
+
+	if (last != nullptr)
+	{
+		last->next = current->next; //makes the node before the node to be deleted point to the node after the node to be deleted
+		delete current;//frees the memory of the removed node
+	}
+	else if (this->getCount() == 1) //if theres only one node left in the linked list
+		this->removeAll();
+	else
+	{
+		head = head->next;
+		delete current;
+	}
+}
+
+template <typename TheType>
+void LinkedList<TheType>::removeBegining()//removes the first node and frees the associated memory
+{
+	Node<TheType>* current = head;
+	if (head != nullptr)//checks the list isn't empty
+	{
+		head = head->next; //moves the head pointer to the next node and deletes the first
+		delete current;
+
+		if (head == nullptr)//if there is no node in the list now
+			tail = head;
+	}
+}
+
+
+template <typename TheType>
+void LinkedList<TheType>::removeAll()//frees the memory of the LinkedList
+{
+	Node<TheType>* current = head;
+
+	while (head != nullptr)//checks the linked list isn't empty/loops through it
+	{
+		current = head;
+		head = head->next;
+		delete current;//frees the memory that current points to.
+	}
+	tail = nullptr;
+}
+
+
+template <typename TheType>
+bool LinkedList<TheType>::ReadFile(std::string fileName)//reads from a file if ADT is used it must have an override for ifstream
+{
+	TheType temp;
+	std::ifstream in;
+
+	in.open(fileName);//opens and checks file
+	if (!in.is_open())
+	{
+		std::cout << "File not found" << std::endl;
+		return false;
+	}
+	while (true)
+	{
+		in >> temp;
+		if (in.eof()) //checks for the end of the file and breaks the loop
+			break;
+		this->addToEnd(temp);//reads data into the linked list
+		
+	}
+	in.close();
+	return true;
+}
+
+template <typename TheType>
+bool LinkedList<TheType>::writeFile(std::string fileName)//writes to a file if ADT is used it must have an override for ofstream
+{
+	std::ofstream out;
+	out.open(fileName);//opens file
+
+
+	if (out.is_open())//checks file is open
+	{
+		for (Node<TheType>* current = head; current != nullptr; current = current->next)
+		{
+			out << current->data;//writes data from the linked list into the file
+		}
+		return true;
+	}
+	return false;
+}
+
+/******************************************************************************************************************************************/
+//overloads
+
+template <typename TheType>
+LinkedList<TheType>& LinkedList<TheType>::operator=(const LinkedList<TheType>& rhs)//assignment operator
+{
+	if (head == rhs.head)//check for self-assignment
+		return *this;
+
+	this->removeAll();//empties the lhs linked list
+
+	for (Node<TheType>* current = rhs.head; current != nullptr; current = current->next)//copies the rhs list to the lhs list
+		this->addToEnd(current->data);
+	return *this;
+}
+
+template <typename TheType>
+void LinkedList<TheType>::printHTMLPages(int catNum)
+{
+	Question temp;
+	for (Node<TheType>* current = head; current != nullptr; current = current->next)
+	{
+		printHTMLQuestions(current->data, catNum);
+	}
+	return;
+}
+
+/******************************************************************************************************************************************/
+//private functions
+
+template <typename TheType>
+Node<TheType>* LinkedList<TheType>::findByItemPrevious(const TheType& dataIn)//helper function for remove item returns a pointer to the node before the searched node
+{
+	Node<TheType>* last = nullptr;
+
+	//check if list is empty
+	if (head == nullptr)
+		return nullptr;
+
+	//loop through and find the item
+	for (Node<TheType>* current = head; current != nullptr; current = current->next)
+	{
+		if (dataIn == current->data)//if the item is found return the pointer to the node before it
+			return last;
+
+		last = current;//updates last if match not found
+	}
+	return nullptr;//else return a nullptr
+
+
+}
+
+template <typename TheType>
+Node<TheType>* LinkedList<TheType>::findByItem(const TheType& dataIn)//finds an item based on the data in the node and returns a pointer to that node
+{
+	//check if list is empty
+	if (head == nullptr)
+		return nullptr;
+
+	//loop through and find the item
+	for (Node<TheType>* current = head; current != nullptr; current = current->next)
+		if (dataIn == current->data)//if the item is found return the pointer to it
+			return current;
+
+	return nullptr;//else return a nullptr
+
+
+}

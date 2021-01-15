@@ -1,0 +1,23 @@
+/*
+ Ben Kupernik
+ Node.template
+ Header File
+
+ This is the definition file for a template node class intended to be used in a linked list (its friend function). It contains two
+ constructors.
+ */
+
+ /********************************************************************************************************************************/
+
+template <typename TheType>
+Node<TheType>::Node()//default constructor
+{
+	next = nullptr;
+}
+
+template <typename TheType>
+Node<TheType>::Node(TheType dataIn)//constructor with the type as parameter
+{
+	next = nullptr;
+	data = dataIn;
+}
